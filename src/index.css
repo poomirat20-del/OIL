@@ -1,11 +1,16 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
     font-family: 'Kanit', sans-serif;
     background-color: #030712;
     color: #f9fafb;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, input, a {
+    touch-action: manipulation;
   }
 }
 

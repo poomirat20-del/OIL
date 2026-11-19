@@ -117,10 +117,10 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({ photoDataUrl, onClos
 
       {/* 2. On-Screen Preview Modal (Hidden in @media print) */}
       <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 no-print overflow-y-auto">
-        <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-5 sm:p-6 max-w-md w-full text-center relative shadow-2xl shadow-amber-500/20 my-auto">
+        <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[94dvh] overflow-y-auto text-center relative shadow-2xl shadow-amber-500/20 my-auto">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-colors"
+            className="absolute top-3.5 right-3.5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -133,16 +133,16 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({ photoDataUrl, onClos
           <h3 className="text-base sm:text-lg font-bold text-slate-100 font-kanit">
             สั่งพิมพ์รูปภาพโฟโต้บูท
           </h3>
-          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 mb-3">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 mb-2.5">
             ระบบจัดหน้าสำหรับเครื่องพิมพ์ โดยตัดเมนูและปุ่มควบคุมทั้งหมดออกอัตโนมัติ
           </p>
 
           {/* Photo Preview Container */}
-          <div className="w-full max-h-[46vh] overflow-hidden rounded-2xl bg-black/60 border border-slate-700/80 mb-4 flex items-center justify-center p-2">
+          <div className="w-full max-h-[38dvh] overflow-hidden rounded-2xl bg-black/60 border border-slate-700/80 mb-3 flex items-center justify-center p-2">
             <img
               src={photoDataUrl}
               alt="ตัวอย่างก่อนพิมพ์"
-              className="max-h-[42vh] w-auto object-contain rounded-lg shadow-lg"
+              className="max-h-[34dvh] w-auto object-contain rounded-lg shadow-lg"
             />
           </div>
 

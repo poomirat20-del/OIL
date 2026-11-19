@@ -7,6 +7,73 @@ interface QRCodeModalProps {
   onClose: () => void;
 }
 
+function dataUrlToBlob(dataUrl: string): { blob: Blob; ext: string } {
+  const parts = dataUrl.split(',');
+  const mimeMatch = parts[0]?.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const ext = mime.includes('png') ? 'png' : 'jpg';
+  const bstr = atob(parts[1] || '');
+  const u8arr = new Uint8Array(bstr.length);
+  for (let i = 0; i < bstr.length; i++) {
+    u8arr[i] = bstr.charCodeAt(i);
+  }
+  return { blob: new Blob([u8arr], { type: mime }), ext };
+}
+
+// Browser-direct CORS upload to kappa.lol (works on GitHub Pages & static hosts without a backend)
+async function uploadDirectToKappa(blob: Blob, ext: string): Promise<string> {
+  const form = new FormData();
+  form.append('file', blob, `loykrathong-${Date.now()}.${ext}`);
+
+  const res = await fetch('https://kappa.lol/api/upload', {
+    method: 'POST',
+    body: form,
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`kappa HTTP ${res.status}`);
+  }
+
+  const json = (await res.json()) as { link?: string; ext?: string };
+  if (!json.link || !json.link.startsWith('http')) {
+    throw new Error('kappa returned no link');
+  }
+  return `${json.link}${json.ext || ''}`;
+}
+
+// Secondary browser-direct CORS fallback (tmpfiles.org supports Access-Control-Allow-Origin: *)
+async function uploadDirectToTmpfiles(blob: Blob, ext: string): Promise<string> {
+  const form = new FormData();
+  form.append('file', blob, `loykrathong-${Date.now()}.${ext}`);
+
+  const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+    method: 'POST',
+    body: form,
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`tmpfiles HTTP ${res.status}`);
+  }
+
+  const json = (await res.json()) as { status?: string; data?: { url?: string } };
+  const url = json.data?.url;
+  if (!url || !url.startsWith('http')) {
+    throw new Error('tmpfiles returned no URL');
+  }
+  return url;
+}
+
+async function uploadPhotoClientDirect(photoDataUrl: string): Promise<string> {
+  const { blob, ext } = dataUrlToBlob(photoDataUrl);
+  try {
+    return await uploadDirectToKappa(blob, ext);
+  } catch {
+    return await uploadDirectToTmpfiles(blob, ext);
+  }
+}
+
 export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose }) => {
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
   const [viewUrl, setViewUrl] = useState<string | null>(null);
@@ -25,31 +92,51 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
       setQrImageUrl(null);
 
       try {
-        const res = await fetch('/api/photos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dataUrl: photoDataUrl }),
-        });
+        let finalUrl: string | null = null;
+        let hasPublicLink = false;
 
-        if (!res.ok) {
-          throw new Error('ไม่สามารถอัปโหลดรูปภาพได้');
+        // On GitHub Pages / static hosts, skip /api/photos and upload directly via browser CORS
+        const isKnownStaticHost =
+          window.location.hostname.endsWith('github.io') ||
+          window.location.hostname.endsWith('pages.dev') ||
+          window.location.hostname.endsWith('netlify.app');
+
+        if (!isKnownStaticHost) {
+          try {
+            const res = await fetch('/api/photos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ dataUrl: photoDataUrl }),
+              signal: AbortSignal.timeout(14000),
+            });
+
+            const contentType = res.headers.get('content-type') || '';
+            if (res.ok && contentType.includes('application/json')) {
+              const data = (await res.json()) as {
+                id: string;
+                viewUrl: string;
+                publicUrl?: string | null;
+              };
+              if (data.publicUrl && data.publicUrl.startsWith('http')) {
+                finalUrl = data.publicUrl;
+                hasPublicLink = true;
+              }
+            }
+          } catch {
+            // Backend API unavailable (e.g., static deploy); fall back to direct browser upload below
+          }
         }
 
-        const data = (await res.json()) as {
-          id: string;
-          viewUrl: string;
-          localUrl?: string;
-          publicUrl?: string | null;
-        };
+        // Fallback / GitHub Pages path: upload directly from browser to CORS-enabled image CDN
+        if (!finalUrl) {
+          finalUrl = await uploadPhotoClientDirect(photoDataUrl);
+          hasPublicLink = true;
+        }
+
         if (!isMounted) return;
 
-        let finalUrl = data.publicUrl || data.viewUrl;
-        if (!finalUrl.startsWith('http')) {
-          finalUrl = `${window.location.origin}${finalUrl}`;
-        }
-
         const generatedQr = await QRCode.toDataURL(finalUrl, {
-          width: 300,
+          width: 320,
           margin: 2,
           errorCorrectionLevel: 'M',
           color: {
@@ -61,16 +148,12 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
         if (!isMounted) return;
 
         setViewUrl(finalUrl);
-        setIsPublic(Boolean(data.publicUrl));
+        setIsPublic(hasPublicLink);
         setQrImageUrl(generatedQr);
-
-        if (!data.publicUrl) {
-          setError('ไม่สามารถเชื่อมต่อคลาวด์ภายนอกได้ชั่วคราว กรุณากดปุ่ม "บันทึกลงเครื่อง" ด้านล่างแทน');
-        }
       } catch (err) {
         console.error('QR creation error:', err);
         if (!isMounted) return;
-        setError('เกิดข้อผิดพลาดในการสร้าง QR Code กรุณากดปุ่ม "บันทึกลงเครื่อง" ด้านล่างแทน');
+        setError('ไม่สามารถอัปโหลดสร้าง QR Code ได้ กรุณาตรวจสอบอินเทอร์เน็ต หรือกด "บันทึกลงเครื่อง" ด้านล่างแทน');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -102,11 +185,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-print">
-      <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-5 sm:p-6 max-w-sm w-full text-center relative shadow-2xl shadow-amber-500/20 my-auto">
+      <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-4 sm:p-6 max-w-sm w-full max-h-[94dvh] overflow-y-auto text-center relative shadow-2xl shadow-amber-500/20 my-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-colors"
+          className="absolute top-3.5 right-3.5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -119,14 +202,14 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
         <h3 className="text-base sm:text-lg font-bold text-slate-100 font-kanit">
           สแกน QR เพื่อรับรูปภาพ
         </h3>
-        <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 mb-3">
+        <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 mb-2.5">
           {isPublic
             ? 'เปิดกล้องมือถือสแกน แล้วแตะค้างที่รูปเพื่อบันทึกลงเครื่องได้ทันที'
             : 'กำลังเตรียมลิงก์รูปภาพความละเอียดสูงสำหรับดาวน์โหลด'}
         </p>
 
         {/* QR Code Image Box */}
-        <div className="bg-white p-3 rounded-2xl shadow-inner mx-auto mb-3 w-[250px] h-[250px] flex items-center justify-center">
+        <div className="bg-white p-2.5 rounded-2xl shadow-inner mx-auto mb-2.5 w-[205px] h-[205px] sm:w-[235px] sm:h-[235px] flex items-center justify-center">
           {isLoading ? (
             <div className="flex flex-col items-center gap-2">
               <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -153,7 +236,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
         )}
 
         {error && (
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-amber-400/90 mb-3 bg-amber-950/40 p-2 rounded-lg border border-amber-500/20">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-amber-400/90 mb-2.5 bg-amber-950/40 p-2 rounded-lg border border-amber-500/20">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -184,7 +267,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
 
             <button
               onClick={() => setShowFullPreview(true)}
-              className="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium flex items-center justify-center gap-1 border border-slate-700 transition-colors cursor-pointer"
+              className={`py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium flex items-center justify-center gap-1 border border-slate-700 transition-colors cursor-pointer ${
+                viewUrl ? '' : 'col-span-2'
+              }`}
             >
               <Eye className="w-3.5 h-3.5 text-amber-400" />
               <span>ดูรูปขนาดเต็ม</span>
@@ -194,14 +279,14 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
           {viewUrl && (
             <button
               onClick={copyLink}
-              className="w-full py-1.5 px-2 text-[11px] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+              className="w-full py-1 px-2 text-[11px] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
             >
               {copied ? '✓ คัดลอกลิงก์แล้ว' : 'คัดลอกลิงก์รูปภาพ'}
             </button>
           )}
         </div>
 
-        <p className="text-[10px] text-slate-500 mt-2">
+        <p className="text-[10px] text-slate-500 mt-1.5">
           โรงเรียนเทศบาล ๕ วัดพระปฐมเจดีย์
         </p>
       </div>
@@ -221,7 +306,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ photoDataUrl, onClose 
           <img
             src={photoDataUrl}
             alt="รูปภาพขนาดเต็ม"
-            className="max-h-[80vh] max-w-full object-contain rounded-xl shadow-2xl"
+            className="max-h-[80dvh] max-w-full object-contain rounded-xl shadow-2xl"
           />
         </div>
       )}

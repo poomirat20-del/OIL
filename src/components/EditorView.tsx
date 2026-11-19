@@ -274,20 +274,20 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
   return (
     <div
-      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row editor-controls select-none"
+      className="h-dvh overflow-hidden bg-slate-950 text-slate-100 flex flex-col md:flex-row editor-controls select-none"
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
       {/* LEFT: WYSIWYG Photobooth Canvas Area */}
       <div
-        className="flex-1 flex flex-col items-center justify-between p-2 sm:p-4 md:p-5 bg-radial from-slate-900 to-slate-950 overflow-y-auto"
+        className="flex-1 min-h-0 flex flex-col items-center justify-between p-2 sm:p-3 md:p-4 bg-radial from-slate-900 to-slate-950 overflow-hidden"
         onClick={() => {
           setSelectedStickerId(null);
           setSelectedTextId(null);
         }}
       >
         {/* Top Header */}
-        <div className="w-full max-w-3xl flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-2 mb-1.5">
+        <div className="w-full max-w-3xl flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-center gap-1 sm:gap-2 mb-1 shrink-0">
           <button
             onClick={onBackToCamera}
             className="self-start sm:justify-self-start text-xs px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700 hover:border-amber-400 text-slate-300 flex items-center gap-1 cursor-pointer transition-all shrink-0"
@@ -304,7 +304,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
 
         {/* Live Interactive Canvas Container */}
-        <div className="relative my-auto w-full flex items-center justify-center p-1 sm:p-2">
+        <div className="relative flex-1 min-h-0 w-full flex items-center justify-center p-1 overflow-hidden">
           <div
             ref={containerRef}
             className="relative inline-flex items-center justify-center shadow-2xl shadow-amber-500/10 rounded-xl overflow-hidden border border-amber-500/20"
@@ -312,7 +312,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             {/* Single Source of Truth Canvas */}
             <canvas
               ref={canvasRef}
-              className="block w-auto h-auto max-w-full max-h-[44vh] md:max-h-[76vh]"
+              className="block w-auto h-auto max-w-full max-h-[38dvh] md:max-h-[calc(100dvh-105px)]"
             />
 
             {/* Vertical Center Snap Guide Line */}
@@ -454,13 +454,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
-        <div className="text-[10px] sm:text-[11px] text-slate-400 text-center mt-1">
+        <div className="text-[10px] sm:text-[11px] text-slate-400 text-center mt-0.5 shrink-0">
           💡 ภาพที่บันทึกและสั่งพิมพ์จะตรงตามแบบบนหน้าจอ 100%
         </div>
       </div>
 
       {/* RIGHT: Tools & Controls Panel (Optimized for iPad & Mobile) */}
-      <div className="w-full md:w-[340px] lg:w-[420px] bg-slate-900 border-t md:border-t-0 md:border-l border-slate-800 flex flex-col justify-between max-h-[50vh] md:max-h-screen">
+      <div className="w-full md:w-[340px] lg:w-[400px] h-[46dvh] md:h-full bg-slate-900 border-t md:border-t-0 md:border-l border-slate-800 flex flex-col justify-between shrink-0 overflow-hidden">
         {/* Navigation Tabs */}
         <div className="grid grid-cols-4 border-b border-slate-800 text-xs font-medium shrink-0">
           <button
@@ -652,7 +652,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                 ))}
               </div>
 
-              <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+              <div className="grid grid-cols-4 gap-2 max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto p-1">
                 {STICKERS.filter(
                   (s) => stickerCategory === 'all' || s.category === stickerCategory
                 ).map((sticker) => (

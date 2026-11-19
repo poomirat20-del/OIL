@@ -87,6 +87,32 @@ async function uploadToUguu(buffer: Buffer, mimeType: string, filename: string):
   return url;
 }
 
+async function uploadToKappa(buffer: Buffer, mimeType: string, filename: string): Promise<string> {
+  const form = new FormData();
+  form.append('file', new Blob([new Uint8Array(buffer)], { type: mimeType }), filename);
+
+  const res = await fetch('https://kappa.lol/api/upload', {
+    method: 'POST',
+    body: form,
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    signal: AbortSignal.timeout(12000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`kappa HTTP ${res.status}`);
+  }
+
+  const json = (await res.json()) as {
+    link?: string;
+    ext?: string;
+  };
+
+  if (!json.link || !json.link.startsWith('http')) {
+    throw new Error('kappa returned no link');
+  }
+  return `${json.link}${json.ext || ''}`;
+}
+
 async function uploadToFreeimage(buffer: Buffer, mimeType: string, filename: string): Promise<string> {
   const form = new FormData();
   form.append('key', '6d207e02198a847aa98d0a2a901485a5');
@@ -135,11 +161,12 @@ app.post('/api/photos', async (req: Request, res: Response) => {
     const buffer = Buffer.from(base64Data, 'base64');
     const filename = `loykrathong-${id}.${ext}`;
 
-    // Race pomf.lain.la and uguu.se (both work reliably over IPv4 & IPv6 on mobile networks)
+    // Race kappa.lol, uguu.se, and pomf.lain.la (fast direct image URLs over IPv4 & IPv6)
     try {
       publicUrl = await Promise.any([
-        uploadToPomf(buffer, mimeType, filename),
+        uploadToKappa(buffer, mimeType, filename),
         uploadToUguu(buffer, mimeType, filename),
+        uploadToPomf(buffer, mimeType, filename),
       ]);
     } catch {
       publicUrl = await uploadToFreeimage(buffer, mimeType, filename);

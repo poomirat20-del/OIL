@@ -124,27 +124,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </div>
 
         {/* Features highlight pills */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-6 pt-4 border-t border-slate-800 text-center">
-          <div className="flex flex-col items-center p-2 rounded-xl bg-slate-950/40">
-            <Camera className="w-4 h-4 text-amber-400 mb-1" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3.5 sm:mt-4 pt-3 border-t border-slate-800 text-center">
+          <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-xl bg-slate-950/40">
+            <Camera className="w-4 h-4 text-amber-400 mb-0.5" />
             <span className="text-[11px] text-slate-200 font-medium">กล้องหน้า / หลัง</span>
             <span className="text-[9px] text-slate-400">นับถอยหลัง 3 วินาที</span>
           </div>
 
-          <div className="flex flex-col items-center p-2 rounded-xl bg-slate-950/40">
-            <ImageIcon className="w-4 h-4 text-amber-400 mb-1" />
+          <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-xl bg-slate-950/40">
+            <ImageIcon className="w-4 h-4 text-amber-400 mb-0.5" />
             <span className="text-[11px] text-slate-200 font-medium">12 กรอบรูป</span>
             <span className="text-[9px] text-slate-400">ลายไทย & พระปฐมเจดีย์</span>
           </div>
 
-          <div className="flex flex-col items-center p-2 rounded-xl bg-slate-950/40">
-            <QrCode className="w-4 h-4 text-amber-400 mb-1" />
+          <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-xl bg-slate-950/40">
+            <QrCode className="w-4 h-4 text-amber-400 mb-0.5" />
             <span className="text-[11px] text-slate-200 font-medium">สแกน QR โหลดรูป</span>
             <span className="text-[9px] text-slate-400">เปิดเฉพาะรูปบนมือถือ</span>
           </div>
 
-          <div className="flex flex-col items-center p-2 rounded-xl bg-slate-950/40">
-            <Printer className="w-4 h-4 text-amber-400 mb-1" />
+          <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-xl bg-slate-950/40">
+            <Printer className="w-4 h-4 text-amber-400 mb-0.5" />
             <span className="text-[11px] text-slate-200 font-medium">สั่งพิมพ์รูปภาพ</span>
             <span className="text-[9px] text-slate-400">พิมพ์เฉพาะภาพไร้เมนู</span>
           </div>
@@ -153,7 +153,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         {/* Start Button */}
         <button
           onClick={onStartCapture}
-          className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 active:scale-[0.98] transition-all cursor-pointer font-kanit"
+          className="w-full mt-3.5 sm:mt-4 py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 active:scale-[0.98] transition-all cursor-pointer font-kanit"
         >
           <Camera className="w-5 h-5 text-slate-950" />
           <span>เริ่มถ่ายภาพ ({selectedLayout.name})</span>
@@ -162,9 +162,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       </div>
 
       {/* Footer credits */}
-      <div className="relative z-10 text-center pb-2 text-xs text-slate-500">
+      <div className="relative z-10 text-center pb-1 text-[11px] sm:text-xs text-slate-500">
         <p>โรงเรียนเทศบาล ๕ วัดพระปฐมเจดีย์ สังกัดเทศบาลนครนครปฐม</p>
-        <p className="text-[11px] text-amber-500/70 mt-0.5">ร่วมสืบสานคุณค่ามรดกวัฒนธรรมประเพณีลอยกระทงไทย</p>
+        <p className="text-[10px] sm:text-[11px] text-amber-500/70 mt-0.5">ร่วมสืบสานคุณค่ามรดกวัฒนธรรมประเพณีลอยกระทงไทย</p>
       </div>
     </div>
   );

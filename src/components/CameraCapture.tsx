@@ -188,7 +188,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
   const isComplete = capturedPhotos.length === layout.shotsCount;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-3 md:p-6 camera-screen">
+    <div className="h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between p-2.5 sm:p-3.5 md:p-4 overflow-hidden camera-screen">
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
@@ -198,11 +198,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
       )}
 
       {/* Header Bar */}
-      <div className="max-w-4xl w-full mx-auto flex items-center justify-between pb-3 border-b border-amber-500/20">
+      <div className="max-w-4xl w-full mx-auto flex items-center justify-between pb-2 border-b border-amber-500/20 shrink-0">
         <button
           onClick={onBack}
           disabled={isCapturingSession}
-          className="text-sm px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
         >
           <RotateCcw className="w-4 h-4 text-amber-400" />
           <span>เปลี่ยนรูปแบบ ({layout.name})</span>
@@ -211,7 +211,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 transition-all cursor-pointer"
             title={soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
@@ -220,7 +220,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
           <button
             onClick={toggleFacingMode}
             disabled={isCapturingSession}
-            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400 text-amber-400 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-medium"
+            className="p-2 sm:px-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400 text-amber-400 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-medium"
             title="สลับกล้องหน้า/หลัง"
           >
             <RefreshCw className="w-4 h-4" />
@@ -230,9 +230,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
       </div>
 
       {/* Main Viewfinder Area */}
-      <div className="max-w-3xl w-full mx-auto my-auto py-2 flex flex-col items-center">
+      <div className="max-w-3xl w-full mx-auto flex-1 min-h-0 py-1.5 flex flex-col items-center justify-center">
         {/* Progress Bar of Shots */}
-        <div className="w-full flex items-center justify-between mb-2 px-2 text-xs text-amber-200/90">
+        <div className="w-full flex items-center justify-between mb-1.5 px-2 text-xs text-amber-200/90 shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             <span className="font-semibold">{layout.name}</span>
@@ -242,8 +242,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
           </div>
         </div>
 
-        {/* Viewfinder Container */}
-        <div className="relative w-full aspect-[4/3] md:aspect-[16/10] max-h-[62vh] rounded-2xl overflow-hidden bg-black border-2 border-amber-500/30 shadow-2xl shadow-amber-500/10 flex items-center justify-center">
+        {/* Viewfinder Container (flex-1 min-h-0 guarantees exact fit on iPad Landscape & Portrait) */}
+        <div className="relative w-full flex-1 min-h-0 max-h-[54dvh] sm:max-h-[58dvh] rounded-2xl overflow-hidden bg-black border-2 border-amber-500/30 shadow-2xl shadow-amber-500/10 flex items-center justify-center">
           {/* Video Stream */}
           <video
             ref={videoRef}
@@ -280,10 +280,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
           {/* Countdown Indicator Overlay */}
           {countdown !== null && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-xs z-30">
-              <div className="text-8xl md:text-9xl font-bold font-kanit text-amber-300 drop-shadow-[0_0_35px_rgba(251,191,36,0.9)] animate-ping">
+              <div className="text-7xl sm:text-8xl md:text-9xl font-bold font-kanit text-amber-300 drop-shadow-[0_0_35px_rgba(251,191,36,0.9)] animate-ping">
                 {countdown}
               </div>
-              <p className="text-base text-amber-100 font-medium mt-4 bg-slate-900/80 px-4 py-1.5 rounded-full border border-amber-400/40">
+              <p className="text-sm sm:text-base text-amber-100 font-medium mt-3 bg-slate-900/80 px-4 py-1.5 rounded-full border border-amber-400/40">
                 ยิ้มสวยๆ สำหรับช็อตที่ {activeShotIndex + 1}! ✨
               </p>
             </div>
@@ -292,7 +292,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
           {/* Target Face Guides */}
           {isCameraReady && !isCapturingSession && (
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-48 h-60 md:w-56 md:h-72 border-2 border-dashed border-amber-400/25 rounded-[45%] flex items-center justify-center">
+              <div className="w-40 h-48 sm:w-48 sm:h-60 md:w-52 md:h-64 border-2 border-dashed border-amber-400/25 rounded-[45%] flex items-center justify-center">
                 <span className="text-[11px] text-amber-300/40 font-light tracking-wide bg-slate-950/40 px-2 py-0.5 rounded">
                   จัดตำแหน่งใบหน้าตรงนี้
                 </span>
@@ -304,7 +304,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
           {facingMode === 'user' && (
             <button
               onClick={() => setMirror(!mirror)}
-              className="absolute top-3 left-3 bg-slate-950/70 backdrop-blur-md border border-slate-700 text-slate-300 hover:text-amber-300 text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 z-20 cursor-pointer"
+              className="absolute top-2.5 left-2.5 bg-slate-950/70 backdrop-blur-md border border-slate-700 text-slate-300 hover:text-amber-300 text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 z-20 cursor-pointer"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{mirror ? 'กระจกเงา (เปิด)' : 'กระจกเงา (ปิด)'}</span>
@@ -313,7 +313,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
         </div>
 
         {/* Thumbnails of Captured Shots */}
-        <div className="w-full mt-3 flex items-center justify-center gap-2 overflow-x-auto py-1">
+        <div className="w-full mt-2 flex items-center justify-center gap-2 overflow-x-auto py-0.5 shrink-0">
           {Array.from({ length: layout.shotsCount }).map((_, index) => {
             const photo = capturedPhotos[index];
             const isCurrent = activeShotIndex === index && isCapturingSession;
@@ -321,7 +321,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
             return (
               <div
                 key={index}
-                className={`relative w-16 h-20 md:w-20 md:h-24 rounded-xl overflow-hidden border-2 flex items-center justify-center transition-all ${
+                className={`relative w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden border-2 flex items-center justify-center transition-all shrink-0 ${
                   photo
                     ? 'border-amber-400 shadow-md shadow-amber-500/20 bg-slate-900'
                     : isCurrent
@@ -335,11 +335,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
                     {!isCapturingSession && (
                       <button
                         onClick={() => retakeSingle(index)}
-                        className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-amber-200 transition-opacity cursor-pointer"
+                        className="absolute inset-0 bg-black/40 sm:bg-black/60 opacity-90 sm:opacity-0 hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-amber-200 transition-opacity cursor-pointer"
                         title="ถ่ายใหม่ช็อตนี้"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 mb-0.5" />
-                        <span>ถ่ายใหม่</span>
+                        <RotateCcw className="w-3.5 h-3.5 mb-0.5 drop-shadow" />
+                        <span className="drop-shadow">ถ่ายใหม่</span>
                       </button>
                     )}
                   </>
@@ -353,7 +353,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ layout, onPhotosCa
       </div>
 
       {/* Bottom Controls Bar */}
-      <div className="max-w-xl w-full mx-auto pt-2 pb-1 flex flex-col items-center gap-3">
+      <div className="max-w-xl w-full mx-auto pt-1.5 pb-1 flex flex-col items-center gap-1.5 shrink-0">
         {/* Hidden File Input */}
         <input
           ref={fileInputRef}
